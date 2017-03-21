@@ -1,0 +1,159 @@
+﻿<Page
+    x:Class="LeeViewerUWP.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:LeeViewerUWP"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+	<Page.Resources>
+		<Flyout x:Key="GenerateFlyout">
+			<Grid Height="200" Width="200">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+				<TextBox x:Name="rowsBox" Header="Rows" Grid.Row="0" TextChanging="Box_TextChanging" InputScope="Number"/>
+				<TextBox x:Name="columnsBox" Header="Columns" Grid.Row="1" TextChanging="Box_TextChanging" InputScope="Number"/>
+				<TextBlock x:Name="fastGenerationWarning" Visibility="Collapsed" Grid.Row="2" Text="FAST GENERATION IS ON" Margin="5" Foreground="{ThemeResource AppBarToggleButtonBackgroundChecked}" FontFamily="Segoe UI Semibold" FontWeight="Bold"/>
+				<Grid Grid.Row="3"/>
+				<Grid Grid.Row="4">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition/>
+					</Grid.ColumnDefinitions>
+					<ProgressRing x:Name="GenerateWaitDisplay"/>
+					<Button x:Name="GenerateButton" IsEnabled="False" Grid.Column="1" Content="Generate" HorizontalAlignment="Right" Click="GenerateButton_Click" Background="{ThemeResource SystemControlBackgroundAccentBrush}" Foreground="{ThemeResource SystemControlForegroundAltHighBrush}"/>
+				</Grid>
+			</Grid>
+		</Flyout>
+		<Flyout x:Key="SettingsFlyout">
+			<Grid Height="275" Width="175">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+				<!--
+				<ToggleSwitch x:Name="solveDelaySwitch" Header="Solving speed" Grid.Row="0" OffContent="Slow (250 ms/cell)" OnContent="Fast (1ms/cell)" IsOn="True"/>
+				<ToggleSwitch x:Name="pathDelaySwitch" Header="Finding path speed" Grid.Row="1" OffContent="Slow (250 ms/cell)" OnContent="Fast (1ms/cell)" IsOn="False"/>
+				-->
+				<Slider x:Name="solveDelaySlider" Grid.Row="0" Header="Solving speed" TickFrequency="1" Maximum="3" LargeChange="1" SnapsTo="StepValues" TickPlacement="Outside"/>
+				<Slider x:Name="pathDelaySlider" Grid.Row="1" Header="Finding path speed" TickFrequency="1" Maximum="2" LargeChange="1" SnapsTo="StepValues" Value="1" TickPlacement="Outside"/>
+				<Grid Grid.Row="2">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition/>
+						<ColumnDefinition Width="Auto"/>
+					</Grid.ColumnDefinitions>
+					<ToggleSwitch x:Name="fastGenerationSwitch" Header="Fast generation" Grid.Column="0" Toggled="fastGenerationSwitch_Toggled"/>
+					<SymbolIcon Symbol="Help" Grid.Column="1" ToolTipService.ToolTip="Fast generation will generate the table faster but a progress bar will not be visible and the UI may freeze or crash."/>
+				</Grid>
+				<Grid Grid.Row="4">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition/>
+						<ColumnDefinition Width="Auto"/>
+					</Grid.ColumnDefinitions>
+					<ToggleSwitch x:Name="textVisibleSwitch" IsOn="True" Header="Cell text visible" Grid.Column="0"/>
+					<SymbolIcon Symbol="Help" Grid.Column="1" ToolTipService.ToolTip="The numbered cells will have their number show. This isn't recommended for tables boards than 20x20. The text will still be visible in the tooltip when hovering a cell."/>
+				</Grid>
+			</Grid>
+		</Flyout>
+	</Page.Resources>
+
+	<Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition/>
+			<ColumnDefinition x:Name="leeActionsColumn" Width="0"/>
+			<ColumnDefinition x:Name="leeStackColumn" Width="0"/>
+		</Grid.ColumnDefinitions>
+		<Grid Grid.Column="0">
+			<Grid.RowDefinitions>
+				<RowDefinition/>
+				<RowDefinition Height="Auto"/>
+			</Grid.RowDefinitions>
+			<ProgressBar x:Name="GenerateProgressBar" Visibility="Collapsed" SmallChange="1" VerticalContentAlignment="Bottom" VerticalAlignment="Bottom" HorizontalContentAlignment="Stretch" Grid.Row="0"/>
+			<Grid x:Name="Viewer" Grid.Row="0" Margin="10" RequestedTheme="Light" Background="LightBlue"/>
+			<CommandBar x:Name="commandBar" Grid.Row="1" Background="{ThemeResource SystemControlBackgroundAccentBrush}">
+				<CommandBar.CommandBarOverflowPresenterStyle>
+					<Style TargetType="CommandBarOverflowPresenter">
+						<Setter Property="Background" Value="{ThemeResource SystemControlBackgroundAccentBrush}" />
+					</Style>
+				</CommandBar.CommandBarOverflowPresenterStyle>
+				<CommandBar.Content>
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto"/>
+							<ColumnDefinition Width="Auto"/>
+							<ColumnDefinition Width="Auto"/>
+						</Grid.ColumnDefinitions>
+						<TextBlock Grid.Column="0" x:Name="Instructions" Text="Please generate the board." VerticalAlignment="Center" Margin="5" Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}" FontFamily="Segoe UI Semibold" FontSize="20"/>
+						<AppBarSeparator Grid.Column="1"/>
+						<TextBlock Grid.Column="2" x:Name="PointingAt" Text="" VerticalAlignment="Center" Margin="5"/>
+					</Grid>
+				</CommandBar.Content>
+				<AppBarButton Icon="Undo" Label="Reset" Click="ResetButton_Click"/>
+				<AppBarButton Icon="Setting" Label="Settings" x:Name="SettingsButton" Flyout="{StaticResource SettingsFlyout}"/>
+				<AppBarButton Icon="Add" Label="Generate" x:Name="StartButton" Flyout="{StaticResource GenerateFlyout}" Click="Button_Click"/>
+				<AppBarToggleButton Icon="Back" Label="Show details pane" Click="ToggleButton_Click" />
+			</CommandBar>
+			<!--
+			<Grid Grid.Row="1">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="Auto"/>
+				</Grid.ColumnDefinitions>
+				<TextBlock Grid.Column="0" x:Name="Instructions" Text="Please generate the board." VerticalAlignment="Center" Margin="5"/>
+				<Border Grid.Column="1" BorderBrush="Black" BorderThickness="1,0,0,0" Margin="5"/>
+				<TextBlock Grid.Column="2" x:Name="PointingAt" Text="" VerticalAlignment="Center" Margin="5"/>
+				<Grid Grid.Column="3" Margin="5"/>
+				<SymbolIcon Symbol="Setting" Grid.Column="4" Margin="5"/>
+				<Button Content="Options" Grid.Column="4" Margin="5"/>
+				<Button x:Name="StartButton" Content="Generate" Click="Button_Click" Grid.Column="5" Flyout="{StaticResource GenerateFlyout}" Margin="5"/>
+				<ToggleButton Content="Show details pane" Grid.Column="6" Margin="5" Click="ToggleButton_Click"/>
+			</Grid>
+			-->
+
+		</Grid>
+		<ListView x:Name="stepDisplay" Grid.Column="1" Margin="10">
+			<ListView.ItemTemplate>
+				<DataTemplate>
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition/>
+							<ColumnDefinition/>
+						</Grid.ColumnDefinitions>
+						<SymbolIcon Symbol="{Binding Icon}" Grid.Column="0"/>
+						<TextBlock Text="{Binding Text}" Grid.Column="1"/>
+					</Grid>
+				</DataTemplate>
+			</ListView.ItemTemplate>
+		</ListView>
+		<ListView x:Name="queueLeeDisplay" Grid.Column="2" Margin="10">
+			<ListView.ItemTemplate>
+				<DataTemplate>
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition/>
+							<RowDefinition/>
+						</Grid.RowDefinitions>
+						<Border BorderBrush="Black" Grid.Row="0" BorderThickness="1">
+							<TextBlock Text="{Binding I}"/>
+						</Border>
+						<Border BorderBrush="Black" Grid.Row="1" BorderThickness="1,0,1,1">
+							<TextBlock Text="{Binding J}"/>
+						</Border>
+					</Grid>
+				</DataTemplate>
+			</ListView.ItemTemplate>
+		</ListView>
+	</Grid>
+</Page>

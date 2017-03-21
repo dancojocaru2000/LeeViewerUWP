@@ -1,0 +1,1 @@
+MainPackage=C:\Users\Kenneth Bruen\documents\visual studio 2017\Projects\LeeViewerUWP\LeeViewerUWP\bin\x64\Release\LeeViewerUWP_1.0.5.0_x64.appx
